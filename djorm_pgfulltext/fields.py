@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
-
-# Python3 string compadability
-try:
-    basestring
-except NameError:
-    basestring = str
-
 import django
 from django.db import models
+from django.utils import six
 
 from djorm_pgfulltext.utils import adapt
 
@@ -43,6 +37,7 @@ class VectorField(models.Field):
     def get_prep_value(self, value):
         return value
 
+
 try:
     from south.modelsinspector import add_introspection_rules
     add_introspection_rules(rules=[], patterns=['djorm_pgfulltext\.fields\.VectorField'])
@@ -74,8 +69,12 @@ if django.VERSION >= (1, 7):
             lhs, lhs_params = qn.compile(self.lhs)
             rhs, rhs_params = self.process_rhs(qn, connection)
 
-            if isinstance(rhs_params, basestring):
+            if isinstance(rhs_params, six.string_types):
                 rhs_params = [rhs_params]
+            elif isinstance(rhs_params, (list, tuple)) and isinstance(rhs_params[0], (list, tuple)):
+                # TODO: test
+                # Django 1.11 passes a list/tuple inside a list/tuple for rhs tuple
+                rhs_params = rhs_params[0]
 
             if type(rhs_params[0]) == TSConfig:
                 ts = rhs_params[0]

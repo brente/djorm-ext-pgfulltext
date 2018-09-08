@@ -1,10 +1,8 @@
-"""
-Update search fields.
-"""
-from __future__ import print_function
+# -*- coding: utf-8 -*-
+"""Update search fields"""
+from __future__ import print_function, unicode_literals
 from django.core.management.base import BaseCommand, CommandError
-from django.core.exceptions import ImproperlyConfigured
-from django.db import models
+from django.apps import apps
 
 
 class Command(BaseCommand):
@@ -18,22 +16,9 @@ class Command(BaseCommand):
         # check application
 
         try:
-            app_module = models.get_app(app)
-        except ImproperlyConfigured:
-            raise CommandError("There is no enabled application matching '%s'." % app)
-
-        app_models = []
-
-        # get models
-
-        if model:
-            m = models.get_model(app, model)
-            if not m:
-                raise CommandError("There is no model '%s'." % model)
-
-            app_models.append(models.get_model(app, model))
-        else:
-            app_models += models.get_models(app_module)
+            app_models = apps.get_app_config(app).get_models()
+        except LookupError:
+            raise CommandError("There is no enabled application matching '{]'.".format(app))
 
         # get models only with search managers
 

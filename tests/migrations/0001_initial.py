@@ -7,15 +7,16 @@ import djorm_pgfulltext.fields
 from django.db import connection
 import os
 
+
 def load_initial_sql(*args, **kw):
     fn = os.path.join(os.path.dirname(__file__), '0001_initial.sql')
     data = open(fn, 'rb').read()
     connection.cursor().execute(data)
 
-class Migration(migrations.Migration):
 
-    dependencies = [
-    ]
+class Migration(migrations.Migration):
+    initial = True
+    dependencies = []
 
     operations = [
         RunPython(load_initial_sql),
@@ -24,10 +25,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=32)),
-                ('search_index', djorm_pgfulltext.fields.VectorField(default=b'', serialize=False, null=True, editable=False, db_index=True)),
+                ('search_index', djorm_pgfulltext.fields.VectorField()),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
@@ -36,16 +36,15 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=32)),
                 ('description', models.TextField()),
-                ('search_index', djorm_pgfulltext.fields.VectorField(default=b'', serialize=False, null=True, editable=False, db_index=True)),
+                ('search_index', djorm_pgfulltext.fields.VectorField()),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.AddField(
             model_name='book',
             name='author',
-            field=models.ForeignKey(to='djorm_pgfulltext.Person'),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, to='tests.Person'),
             preserve_default=True,
         ),
         migrations.CreateModel(
@@ -54,10 +53,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=32)),
                 ('description', models.TextField()),
-                ('search_index', djorm_pgfulltext.fields.VectorField(default=b'', serialize=False, null=True, editable=False, db_index=True)),
+                ('search_index', djorm_pgfulltext.fields.VectorField()),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
@@ -66,10 +64,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=32)),
                 ('description', models.TextField()),
-                ('search_index', djorm_pgfulltext.fields.VectorField(default=b'', serialize=False, null=True, editable=False, db_index=True)),
+                ('search_index', djorm_pgfulltext.fields.VectorField()),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
@@ -78,11 +75,11 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=32)),
                 ('description', models.TextField()),
-                ('search_index', djorm_pgfulltext.fields.VectorField(default=b'', serialize=False, null=True, editable=False, db_index=True)),
-                ('description_search_index', djorm_pgfulltext.fields.VectorField(default=b'', serialize=False, null=True, editable=False, db_index=True)),
+                ('data', models.TextField(default=b'{}')),
+                ('search_index', djorm_pgfulltext.fields.VectorField()),
+                ('data_search_index', djorm_pgfulltext.fields.VectorField()),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
@@ -91,11 +88,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=32)),
                 ('description', models.TextField()),
-                ('search_index', djorm_pgfulltext.fields.VectorField(default=b'', serialize=False, null=True, editable=False, db_index=True)),
-                ('description_search_index', djorm_pgfulltext.fields.VectorField(default=b'', serialize=False, null=True, editable=False, db_index=True)),
+                ('search_index', djorm_pgfulltext.fields.VectorField()),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
     ]

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from itertools import repeat
-import six
 
-from django.db import models, connections
+from django.db import connections, models
 from django.db.models.query import QuerySet
+from django.utils import six
 from django.utils.encoding import smart_text
 
 from djorm_pgfulltext.utils import adapt
@@ -95,14 +95,16 @@ class SearchManagerMixIn(object):
         self.default_weight = 'D'
         self.config = config
         self.auto_update_search_field = auto_update_search_field
-        self._fields = fields
+        # allow _fields to be predefined on search manager class
+        if not hasattr(self, '_fields') or fields:
+            self._fields = fields
 
         super(SearchManagerMixIn, self).__init__()
 
-    def contribute_to_class(self, cls, name):
-        '''
+    def contribute_to_class(self, cls, name, **kwargs):
+        """
         Called automatically by Django when setting up the model class.
-        '''
+        """
         if not cls._meta.abstract:
             # Attach this manager as _fts_manager in the model class.
             if not getattr(cls, '_fts_manager', None):
@@ -120,7 +122,7 @@ class SearchManagerMixIn(object):
             if self.auto_update_search_field:
                 models.signals.post_save.connect(auto_update_search_field_handler, sender=cls)
 
-        super(SearchManagerMixIn, self).contribute_to_class(cls, name)
+        super(SearchManagerMixIn, self).contribute_to_class(cls, name, **kwargs)
 
     def get_queryset(self):
         return SearchQuerySet(model=self.model, using=self._db)
@@ -312,7 +314,7 @@ class SearchQuerySet(QuerySet):
         if query:
             function = "to_tsquery" if raw else "plainto_tsquery"
             ts_query = smart_text(
-                "%s('%s', %s)" % (function, config, adapt(query))
+                "%s('%s', %s)" % (function, config, smart_text(adapt(query)))
             )
 
             full_search_field = "%s.%s" % (
