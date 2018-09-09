@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.db import models, connections
+from django.utils.encoding import python_2_unicode_compatible
 
 from djorm_pgfulltext.fields import VectorField
 from djorm_pgfulltext.models import SearchManager
 
 
+@python_2_unicode_compatible
 class Person(models.Model):
     name = models.CharField(max_length=32)
     description = models.TextField()
@@ -16,7 +18,7 @@ class Person(models.Model):
         config='names',
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
@@ -24,6 +26,7 @@ class Person(models.Model):
         self.update_search_field()
 
 
+@python_2_unicode_compatible
 class Person2(models.Model):
     name = models.CharField(max_length=32)
     description = models.TextField()
@@ -35,10 +38,11 @@ class Person2(models.Model):
         config='names',
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
+@python_2_unicode_compatible
 class Person3(models.Model):
     name = models.CharField(max_length=32)
     description = models.TextField()
@@ -51,10 +55,11 @@ class Person3(models.Model):
         config='names'
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
+@python_2_unicode_compatible
 class Person4(models.Model):
     INDEXED_KEY = 'indexed_key'
 
@@ -72,7 +77,7 @@ class Person4(models.Model):
         config='names'
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def update_search_field(self, **kwargs):
@@ -99,6 +104,7 @@ class Person4(models.Model):
             config, qn(field.model._meta.db_table), qn(field.column), extra['key'], weight)
 
 
+@python_2_unicode_compatible
 class Person5(models.Model):
     name = models.CharField(max_length=32)
     description = models.TextField()
@@ -111,10 +117,11 @@ class Person5(models.Model):
         auto_update_search_field=True,
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
+@python_2_unicode_compatible
 class Book(models.Model):
     author = models.ForeignKey(Person)
     name = models.CharField(max_length=32)
@@ -127,5 +134,5 @@ class Book(models.Model):
         config='names'
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name

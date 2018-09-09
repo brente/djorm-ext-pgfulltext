@@ -40,14 +40,14 @@ class VectorField(models.Field):
 
 try:
     from south.modelsinspector import add_introspection_rules
-    add_introspection_rules(rules=[], patterns=['djorm_pgfulltext\.fields\.VectorField'])
 except ImportError:
     pass
+else:
+    add_introspection_rules(rules=[], patterns=['djorm_pgfulltext\.fields\.VectorField'])
 
 
 if django.VERSION >= (1, 7):
     # Create custom lookups for Django>= 1.7
-
     from django.db.models import Lookup
 
     def quotes(wordlist):

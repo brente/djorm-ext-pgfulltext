@@ -28,10 +28,10 @@ STATICFILES_DIRS = ()
 USE_I18N = False
 
 SECRET_KEY = 'di!n($kqa3)nd%ikad#kcjpkd^uw*h%*kj=*pm7$vbo6ir7h=l'
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'djorm_pgfulltext',
     'tests',
-)
+]
 
 if django.VERSION >= (1, 6):
     TEST_RUNNER = 'django.test.runner.DiscoverRunner'

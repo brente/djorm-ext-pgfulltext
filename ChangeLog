@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* applies fixes from other branches, refactors tests
 * Fix for empty search\_vector
 * Add travis build logo
 * Fix travis postgres host
