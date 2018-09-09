@@ -9,26 +9,18 @@ except ImportError:
 from . import models
 
 
-class FtsSetUpMixin:
+class FtsSetUpMixin(object):
     def setUp(self):
+        super(FtsSetUpMixin, self).setUp()
         models.Person.objects.all().delete()
 
-        self.p1 = models.Person.objects.create(
-            name=u'Andréi',
-            description=u"Python programmer",
-        )
-        self.p2 = models.Person.objects.create(
-            name=u'Pèpâ',
-            description=u"Is a housewife",
-        )
+        self.p1 = models.Person.objects.create(name=u'Andréi', description=u"Python programmer")
+        self.p2 = models.Person.objects.create(name=u'Pèpâ', description=u"Is a housewife")
 
 
 class TestFts(FtsSetUpMixin, TestCase):
     def test_self_update_index(self):
-        obj = models.Person2.objects.create(
-            name=u'Pepa',
-            description=u"Is a housewife",
-        )
+        obj = models.Person2.objects.create(name=u'Pepa', description=u"Is a housewife")
         obj.update_search_field(using='default')
 
         qs = models.Person2.objects.search(query="Pepa")
@@ -37,10 +29,7 @@ class TestFts(FtsSetUpMixin, TestCase):
         self.assertEqual(qs.count(), 1)
 
     def test_self_automatic_update_index(self):
-        obj = models.Person3(
-            name=u'Pèpâ',
-            description=u"Is a housewife",
-        )
+        obj = models.Person3(name=u'Pèpâ', description=u"Is a housewife")
 
         obj.save()
 
@@ -101,14 +90,8 @@ class TestFts(FtsSetUpMixin, TestCase):
         self.assertEqual(models.Person2.objects.count(), 0)
 
         with transaction.atomic():
-            obj = models.Person2.objects.create(
-                name=u'Pepa',
-                description=u"Is a housewife",
-            )
-            obj2 = models.Person2.objects.create(
-                name=u'Pepa Two',
-                description=u"Is a wife",
-            )
+            obj = models.Person2.objects.create(name=u'Pepa', description=u"Is a housewife")
+            obj2 = models.Person2.objects.create(name=u'Pepa Two', description=u"Is a wife")
 
             obj.update_search_field(using='default')
             obj2.update_search_field(using='default')
@@ -147,10 +130,7 @@ class TestFts(FtsSetUpMixin, TestCase):
         self.assertEqual(qs.count(), 0)
 
     def test_empty_search_index(self):
-        models.Person5.objects.create(
-            name='Pepa',
-            description='Is a housewife'
-        )
+        models.Person5.objects.create(name='Pepa', description='Is a housewife')
 
         self.assertEqual(models.Person5.objects.all().count(), 1)
 
@@ -161,7 +141,6 @@ class TestFts(FtsSetUpMixin, TestCase):
 
 
 class TestFullTextLookups(FtsSetUpMixin, TestCase):
-
     def skipUnlessDjango17(self):
         if django.VERSION < (1, 7):
             self.skipTest("Requires Django>=1.7")
@@ -189,9 +168,7 @@ class TestFullTextLookups(FtsSetUpMixin, TestCase):
     def test_alternative_config(self):
         from djorm_pgfulltext.fields import TSConfig
 
-        pq = models.Person.objects.filter(
-            search_index__ft_startswith=[
-                TSConfig('names'), 'progra'])
+        pq = models.Person.objects.filter(search_index__ft_startswith=[TSConfig('names'), 'progra'])
         p = pq[0]
 
         self.assertEqual(p.pk, self.p1.pk)

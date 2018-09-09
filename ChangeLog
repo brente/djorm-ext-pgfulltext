@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Applied python\_2\_unicode\_compatible to models
 * applies fixes from other branches, refactors tests
 * Fix for empty search\_vector
 * Add travis build logo

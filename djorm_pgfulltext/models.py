@@ -13,11 +13,9 @@ from djorm_pgfulltext.utils import adapt
 try:
     from django.db.transaction import atomic
 except ImportError:
-    # This encapsulates pre django 1.6 transaction
-    # behavior under same abstraction as django 1.6 atomic
-    # decorator. This not intends to emulate django 1.6 atomic
-    # behavior, only has partially same interface for easy
-    # use.
+    # This encapsulates pre django 1.6 transaction behavior under same abstraction as django 1.6 atomic decorator.
+    # This does not intend to emulate django 1.6 atomic behavior:
+    # it only partially has the same interface for ease of use.
     from django.db import transaction
 
     class atomic(object):
@@ -48,38 +46,37 @@ def auto_update_search_field_handler(sender, instance, *args, **kwargs):
 
 class SearchManagerMixIn(object):
     """
-    A mixin to create a Manager with a 'search' method that may do a full text search
-    on the model.
+    A mixin to create a Manager with a 'search' method that may do a full text search on the model.
 
     The manager is set up with a list of one or more model's fields that will be searched.
-    It can be a list of field names, or a list of tuples (field_name, weight). It can also
-    be None, in that case every CharField and TextField in the model will be searched.
+    It can be a list of field names, or a list of tuples (field_name, weight).
+    It can also be None, in that case every CharField and TextField in the model will be searched.
 
-    You can also give a 'search_field', a VectorField into where the values of the searched
-    fields are copied and normalized. If you give it, the searches will be made on this
-    field; if not, they will be made directly in the searched fields.
+    You can also give a 'search_field', a VectorField into where the values of the searched fields are copied and
+    normalized. If you give it, the searches will be made on this field; if not, they will be made directly in the
+    searched fields.
 
-    When using search_field, if auto_update = True, Django signals will be used to
-    automatically syncronize the search_field with the searched fields every time instances
-    are saved. If not, you can call to 'update_search_field' method in model instances to do this.
-    If search_field not used, both auto_update and update_search_field does nothing. Alternatively,
-    you can create a postgresql trigger to do the syncronization at database level, see this:
+    When using search_field, if auto_update = True, Django signals will be used to automatically synchronize the
+    search_field with the searched fields every time instances are saved.
+    If not, you can call the 'update_search_field' method in model instances to do this.
+    If search_field is not used, both auto_update and update_search_field do nothing.
+    Alternatively, you can create a postgresql trigger to do the syncronization at database level, see this:
 
     http://www.postgresql.org/docs/9.1/interactive/textsearch-features.html#TEXTSEARCH-UPDATE-TRIGGERS
 
-    In both cases, you should create a text search index, on either the searched fields or
-    the compound search_field, like explained here:
+    In both cases, you should create a text search index, on either the searched fields or the compound search_field,
+    as explained here:
 
     http://www.postgresql.org/docs/9.1/interactive/textsearch-tables.html#TEXTSEARCH-TABLES-INDEX
 
-    Finally, you can give a 'config', the Postgres text search configuration that will be used
-    to normalize the search_field and the queries. How do you can create a configuration:
+    Finally, you can give a 'config', the Postgres text search configuration that will be used to normalize the
+    search_field and the queries. How do you can create a configuration:
 
     http://www.postgresql.org/docs/9.1/interactive/textsearch-configuration.html
 
     Note that 'config' can be a tuple as in ('pg_catalog.english', 'pg_catalog.simple').
-    In this case, fields are tokenized using each of the tokenizers specified in 'config'
-    and the result is contatenated. This allows you to create tsvector with multiple configs.
+    In this case, fields are tokenized using each of the tokenizers specified in 'config' and the result is
+    contatenated. This allows you to create tsvector with multiple configs.
 
     To do all those actions in database, create a setup sql script for Django:
 
@@ -168,26 +165,21 @@ class SearchManagerMixIn(object):
             else:
                 params = [pk]
 
-            where_sql = "WHERE %s IN (%s)" % (
-                qn(self.model._meta.pk.column),
-                ','.join(repeat("%s", len(params)))
-            )
+            where_sql = "WHERE {} IN ({})".format(qn(self.model._meta.pk.column), ','.join(repeat("%s", len(params))))
 
         search_vector = self._get_search_vector(config, using, fields=fields, extra=extra)
-        sql = "UPDATE %s SET %s = %s %s;" % (
+        sql = "UPDATE {} SET {} = {} {};".format(
             qn(self.model._meta.db_table),
             qn(search_field),
             search_vector or "''",
-            where_sql
-        )
+            where_sql)
 
         with atomic():
             cursor = connection.cursor()
             cursor.execute(sql, params)
 
     def _find_text_fields(self):
-        fields = [f for f in self.model._meta.fields
-                  if isinstance(f, (models.CharField, models.TextField))]
+        fields = [f for f in self.model._meta.fields if isinstance(f, (models.CharField, models.TextField))]
 
         return [(f.name, None) for f in fields]
 
@@ -209,8 +201,8 @@ class SearchManagerMixIn(object):
             field_names = set(field.name for field in self.model._meta.fields if not field.primary_key)
             non_model_fields = set(x[0] for x in parsed_fields).difference(field_names)
             if non_model_fields:
-                raise ValueError("The following fields do not exist in this"
-                                 " model: {0}".format(", ".join(x for x in non_model_fields)))
+                raise ValueError("The following fields do not exist in this model: {0}".format(
+                    ", ".join(x for x in non_model_fields)))
         else:
             parsed_fields.update(self._find_text_fields())
 
@@ -229,8 +221,7 @@ class SearchManagerMixIn(object):
         for config in configs:
             for field_name, weight in vector_fields:
                 search_vector.append(
-                    self._get_vector_for_field(field_name, weight=weight, config=config, using=using, extra=extra)
-                )
+                    self._get_vector_for_field(field_name, weight=weight, config=config, using=using, extra=extra))
         return ' || '.join(search_vector)
 
     def _get_vector_for_field(self, field_name, weight=None, config=None, using=None, extra=None):
@@ -260,8 +251,8 @@ class SearchManagerMixIn(object):
         connection = connections[using]
         qn = connection.ops.quote_name
 
-        return "setweight(to_tsvector('%s', coalesce(%s.%s, '')), '%s')" % \
-               (config, qn(field.model._meta.db_table), qn(field.column), weight)
+        return "setweight(to_tsvector('{}', coalesce({}.{}, '')), '{}')".format(
+            config, qn(field.model._meta.db_table), qn(field.column), weight)
 
 
 class SearchQuerySet(QuerySet):
@@ -273,30 +264,26 @@ class SearchQuerySet(QuerySet):
     def db(self):
         return self._db or self.manager.db
 
-    def search(self, query, rank_field=None, rank_function='ts_rank', config=None,
-               rank_normalization=32, raw=False, using=None, fields=None,
-               headline_field=None, headline_document=None):
+    def search(self, query, rank_field=None, rank_function='ts_rank', config=None, rank_normalization=32, raw=False,
+               using=None, fields=None, headline_field=None, headline_document=None):
         '''
-        Convert query with to_tsquery or plainto_tsquery, depending on raw is
-        `True` or `False`, and return a QuerySet with the filter.
+        Convert query with to_tsquery or plainto_tsquery, depending on raw is `True` or `False`,
+        and return a QuerySet with the filter.
 
-        If `rank_field` is not `None`, a field with this name will be added
-        containing the search rank of the instances, and the queryset will be
-        ordered by it. The rank_function and normalization are explained here:
+        If `rank_field` is not `None`, a field with this name will be added containing the search rank of the
+        instances, and the queryset will be ordered by it. The rank_function and normalization are explained here:
 
         http://www.postgresql.org/docs/9.1/interactive/textsearch-controls.html#TEXTSEARCH-RANKING
 
-        If an empty query is given, no filter is made so the QuerySet will
-        return all model instances.
+        If an empty query is given, no filter is made so the QuerySet will return all model instances.
 
-        If `fields` is not `None`, the filter is made with this fields instead
-        of defined on a constructor of manager.
+        If `fields` is not `None`, the filter is made with this fields instead of defined on a constructor of manager.
 
-        If `headline_field` and `headline_document` is not `None`, a field with
-        this `headline_field` name will be added containing the headline of the
-        instances, which will be searched inside `headline_document`.
+        If `headline_field` and `headline_document` is not `None`, a field with this `headline_field` name will be
+        added containing the headline of the instances, which will be searched inside `headline_document`.
 
         Search headlines are explained here:
+
         http://www.postgresql.org/docs/9.1/static/textsearch-controls.html#TEXTSEARCH-HEADLINE
         '''
 
@@ -313,18 +300,12 @@ class SearchQuerySet(QuerySet):
 
         if query:
             function = "to_tsquery" if raw else "plainto_tsquery"
-            ts_query = smart_text(
-                "%s('%s', %s)" % (function, config, smart_text(adapt(query)))
-            )
+            ts_query = smart_text(u"{}('{}', {})".format(function, config, smart_text(adapt(query))))
 
-            full_search_field = "%s.%s" % (
-                qn(self.model._meta.db_table),
-                qn(self.manager.search_field)
-            )
+            full_search_field = "{}.{}".format(qn(self.model._meta.db_table), qn(self.manager.search_field))
 
-            # if fields is passed, obtain a vector expression with
-            # these fields. In other case, intent use of search_field if
-            # exists.
+            # if fields is passed, obtain a vector expression with these fields.
+            # In other case, intent use of search_field if exists.
             if fields:
                 search_vector = self.manager._get_search_vector(config, using, fields=fields)
             else:
@@ -333,24 +314,16 @@ class SearchQuerySet(QuerySet):
 
                 search_vector = full_search_field
 
-            where = " (%s) @@ (%s)" % (search_vector, ts_query)
+            where = u" ({}) @@ ({})".format(search_vector, ts_query)
             select_dict, order = {}, []
 
             if rank_field:
-                select_dict[rank_field] = '%s(%s, %s, %d)' % (
-                    rank_function,
-                    search_vector,
-                    ts_query,
-                    rank_normalization
-                )
-                order = ['-%s' % (rank_field,)]
+                select_dict[rank_field] = '{}({}, {}, {:d})'.format(
+                    rank_function, search_vector, ts_query, rank_normalization)
+                order = ['-{}'.format(rank_field)]
 
             if headline_field is not None and headline_document is not None:
-                select_dict[headline_field] = "ts_headline('%s', %s, %s)" % (
-                    config,
-                    headline_document,
-                    ts_query
-                )
+                select_dict[headline_field] = "ts_headline('{}', {}, {})".format(config, headline_document, ts_query)
 
             qs = qs.extra(select=select_dict, where=[where], order_by=order)
 
