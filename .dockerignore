@@ -1,0 +1,16 @@
+*.egg-info
+.coverage
+.eggs
+.git
+.gitignore
+.pytest_cache
+.tox
+.travis.yml
+AUTHORS
+build
+ChangeLog
+coverage-html
+docker-compose.yml
+Dockerfile
+**/__pycache__
+*.pyc

@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* Added MANIFEST.in to remove tests and unnecessary files from dist packages
+* Generic code cleanup
 * Applied python\_2\_unicode\_compatible to models
 * applies fixes from other branches, refactors tests
 * Fix for empty search\_vector
