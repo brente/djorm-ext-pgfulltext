@@ -1,15 +1,19 @@
-postgresql:
-  image: postgres
-  ports:
-    - "5432:5432"
+version: '3'
+services:
+  postgresql:
+    image: postgres
+    ports:
+      - "5432:5432"
 
-djorm:
-  build: .
-  environment:
-    - POSTGRES_USER=postgres
-  links:
-    - postgresql
-  ports:
-    - "8000:8000"
-  volumes:
-    - .:/code
+  djorm:
+    build: .
+    depends_on:
+      - postgresql
+    environment:
+      - POSTGRES_USER=postgres
+    links:
+      - postgresql
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code:cached

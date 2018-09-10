@@ -1,2 +1,7 @@
-exclude .travis.yml docker-compose.yml Dockerfile test-requirements.txt tox.ini pytest.ini
-prune djorm_ext_pgfulltext.egg-info
+exclude .travis.yml
+exclude docker-compose.yml
+exclude Dockerfile
+exclude test-requirements.txt
+exclude tox.ini
+exclude pytest.ini
+recursive-exclude djorm_ext_pgfulltext.egg-info *

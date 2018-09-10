@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Added .dockerignore for faster docker builds
 * Added MANIFEST.in to remove tests and unnecessary files from dist packages
 * Generic code cleanup
 * Applied python\_2\_unicode\_compatible to models
